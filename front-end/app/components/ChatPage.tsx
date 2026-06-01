@@ -13,6 +13,86 @@ import type { Message } from "../../types/index";
 // Status shown below the input while the bot is working
 type BotStatus = "idle" | "searching" | "generating";
 
+type Language = "ru" | "kk" | "en";
+
+const translations = {
+  ru: {
+    sidebarTitle: "История",
+    newChat: "Новый чат",
+    universityAssistant: "Университетский ассистент",
+    clearAll: "Очистить всё",
+    student: "Студент",
+    botStatusSearching: "Ищем в базе знаний...",
+    botStatusGenerating: "Печатает...",
+    inputPlaceholder: "Задайте вопрос Zere AI...",
+    sendButton: "Отправить",
+    responseReceived: "Ответ получен",
+    inputWarning: "Может допускать ошибки. Рекомендуем проверять важную информацию.",
+    connectionStatusConnected: "Подключен",
+    connectionStatusConnecting: "Подключение...",
+    connectionStatusDisconnected: "Отключен",
+    today: "Сегодня",
+    yesterday: "Вчера",
+    previous7Days: "За 7 дней",
+    older: "Старые",
+    announcementTitle: "Добро пожаловать в ",
+    announcementBody: "Я готов ответить на ваши вопросы по университету.",
+    announcementButton: "Начать",
+    menu: "Меню",
+    about: "О проекте"
+  },
+  kk: {
+    sidebarTitle: "Тарих",
+    newChat: "Жаңа чат",
+    universityAssistant: "Университеттік көмекші",
+    clearAll: "Барлығын өшіру",
+    student: "Студент",
+    botStatusSearching: "Дерекқордан іздеуде...",
+    botStatusGenerating: "Теруде...",
+    inputPlaceholder: "Zere AI-ға сұрақ қойыңыз...",
+    sendButton: "Жіберу",
+    responseReceived: "Жауап алынды",
+    inputWarning: "Мүмкін қателіктер болуы мүмкін. Маңызды ақпаратты тексеруді ұсынамыз.",
+    connectionStatusConnected: "Қосылған",
+    connectionStatusConnecting: "Қосылуда...",
+    connectionStatusDisconnected: "Қосылмаған",
+    today: "Бүгін",
+    yesterday: "Кеше",
+    previous7Days: "7 күн ішінде",
+    older: "Ескі",
+    announcementTitle: "қош келдіңіз ",
+    announcementBody: "Университет туралы сұрақтарыңызға жауап беруге дайынмын.",
+    announcementButton: "Бастау",
+    menu: "Мәзір",
+    about: "Біз туралы"
+  },
+  en: {
+    sidebarTitle: "History",
+    newChat: "New Chat",
+    universityAssistant: "University Assistant",
+    clearAll: "Clear All",
+    student: "Student",
+    botStatusSearching: "Searching knowledge base...",
+    botStatusGenerating: "Typing...",
+    inputPlaceholder: "Ask Zere AI a question...",
+    sendButton: "Send",
+    responseReceived: "Response received",
+    inputWarning: "May contain errors. We recommend verifying important information.",
+    connectionStatusConnected: "Connected",
+    connectionStatusConnecting: "Connecting...",
+    connectionStatusDisconnected: "Disconnected",
+    today: "Today",
+    yesterday: "Yesterday",
+    previous7Days: "Last 7 days",
+    older: "Older",
+    announcementTitle: "Welcome to ",
+    announcementBody: "I am ready to answer your questions about the university.",
+    announcementButton: "Start",
+    menu: "Menu",
+    about: "About"
+  }
+};
+
 export default function ChatPage() {
   const {
     groupedChats,
@@ -29,6 +109,7 @@ export default function ChatPage() {
   const [botStatus, setBotStatus] = useState<BotStatus>("idle");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [language, setLanguage] = useState<Language>("ru");
   const [notification, setNotification] = useState<{
     message: string;
     type: NotificationType;
@@ -44,7 +125,20 @@ export default function ChatPage() {
       setTimeout(() => setModalOpen(true), 1000);
       localStorage.setItem("zere-announcement-shown", "true");
     }
+    
+    // Load language preference
+    const savedLang = localStorage.getItem("zere-language") as Language;
+    if (savedLang && ["ru", "kk", "en"].includes(savedLang)) {
+      setLanguage(savedLang);
+    }
   }, []);
+
+  const changeLanguage = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("zere-language", lang);
+  };
+
+  const t = translations[language];
 
   const notify = (message: string, type: NotificationType = "success") =>
     setNotification({ message, type });
@@ -91,7 +185,7 @@ export default function ChatPage() {
             streamingIdRef.current = null;
             return prev;
           });
-          notify("Ответ получен");
+          notify(t.responseReceived);
           break;
 
         case "error":
@@ -152,8 +246,8 @@ export default function ChatPage() {
   const handleNewChat = useCallback(() => {
     newChat();
     setMessages([]);
-    notify("Новый чат создан");
-  }, [newChat]);
+    notify(t.newChat);
+  }, [newChat, t]);
 
   const handleLoadChat = useCallback(
     (id: string) => {
@@ -176,8 +270,8 @@ export default function ChatPage() {
   const handleClearAll = useCallback(() => {
     clearAll();
     setMessages([]);
-    notify("История очищена");
-  }, [clearAll]);
+    notify(t.clearAll);
+  }, [clearAll, t]);
 
   const handleExport = useCallback(() => {
     const allHistory = JSON.parse(localStorage.getItem("chatHistory") || "{}");
@@ -226,7 +320,7 @@ export default function ChatPage() {
         onDeleteChat={handleDeleteChat}
       />
 
-      <AnnouncementModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <AnnouncementModal isOpen={modalOpen} onClose={() => setModalOpen(false)} language={language} />
 
       <div className="container">
         <Sidebar
@@ -236,12 +330,12 @@ export default function ChatPage() {
           onLoadChat={handleLoadChat}
           onDeleteChat={handleDeleteChat}
           onClearAll={handleClearAll}
-          onExport={handleExport}
+          translations={t}
+          language={language}
+          onLanguageChange={changeLanguage}
         />
-
         <div className="header">
-          <div className="logo flex justify-center items-center">
-            <img src="/assets/logo.svg" alt="Zere AI" width={80} />
+          <div className="logo h-7 flex justify-center items-center">
           </div>
           <button
             className="menu-toggle"
@@ -254,21 +348,8 @@ export default function ChatPage() {
           </button>
 
           <div className="header-actions">
-            {/* WS connection indicator */}
-            <span
-              className="ws-indicator"
-              title={wsStatus === "connected" ? "Соединение активно" : "Нет соединения"}
-              style={{
-                display: "inline-block",
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: wsStatus === "connected" ? "#22c55e" : wsStatus === "connecting" ? "#f59e0b" : "#ef4444",
-                marginRight: 8,
-              }}
-            />
             <button className="header-btn" onClick={() => setModalOpen(true)}>
-              О проекте
+              {t.about}
             </button>
           </div>
         </div>
@@ -276,10 +357,12 @@ export default function ChatPage() {
         <div className="chat-container">
           <ChatWindow
             messages={messages}
-            onSend={handleSend}
             isLoading={isLoading}
-            botStatus={botStatus}
+            status={botStatus}
+            onSend={handleSend}
+            onExport={handleExport}
             wsStatus={wsStatus}
+            translations={t}
           />
         </div>
       </div>

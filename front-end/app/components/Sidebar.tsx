@@ -13,7 +13,10 @@ interface SidebarProps {
   onLoadChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
   onClearAll: () => void;
-  onExport: () => void;
+  onExport?: () => void;
+  translations?: any;
+  language?: string;
+  onLanguageChange?: (lang: "ru" | "kk" | "en") => void;
 }
 
 function ChatGroup({
@@ -72,19 +75,54 @@ export default function Sidebar({
   onDeleteChat,
   onClearAll,
   onExport,
+  language = "ru",
+  onLanguageChange,
+  translations: t = {
+    sidebarTitle: "История",
+    newChat: "Новый чат",
+    clearAll: "Очистить всё",
+    today: "Сегодня",
+    yesterday: "Вчера",
+    older: "Ранее"
+  }
 }: SidebarProps) {
   const hasChats =
     groupedChats.today.length + groupedChats.yesterday.length + groupedChats.older.length > 0;
 
   return (
     <div className="sidebar">
-      <div className="sidebar-header">
-        <div className="sidebar-title">Zere AI</div>
-        <div style={{ color: "#666", fontSize: 14 }}>Университетский ассистент</div>
+      <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div className="sidebar-title">Zere AI</div>
+          <div style={{ color: "#666", fontSize: 14 }}>{t.universityAssistant}</div>
+        </div>
+        
+        {onLanguageChange && (
+          <div style={{ display: 'flex', gap: '8px', fontSize: '10px' }}>
+            <button 
+              onClick={() => onLanguageChange("ru")}
+              style={{ padding: '2px', border: 'none', background: 'none', cursor: 'pointer', color: language === 'ru' ? 'var(--input-bg)' : '#666', fontWeight: language === 'ru' ? 'bold' : 'normal' }}
+            >
+              RU
+            </button>
+            <button 
+              onClick={() => onLanguageChange("kk")}
+              style={{ padding: '2px', border: 'none', background: 'none', cursor: 'pointer', color: language === 'kk' ? 'var(--input-bg)' : '#666', fontWeight: language === 'kk' ? 'bold' : 'normal' }}
+            >
+              KK
+            </button>
+            <button 
+              onClick={() => onLanguageChange("en")}
+              style={{ padding: '2px', border: 'none', background: 'none', cursor: 'pointer', color: language === 'en' ? 'var(--input-bg)' : '#666', fontWeight: language === 'en' ? 'bold' : 'normal' }}
+            >
+              EN
+            </button>
+          </div>
+        )}
       </div>
 
       <button className="new-chat-btn" onClick={onNewChat}>
-        + Новый чат
+        + {t.newChat}
       </button>
 
       <div className="chat-history">
@@ -93,21 +131,21 @@ export default function Sidebar({
         ) : (
           <>
             <ChatGroup
-              title="Сегодня"
+              title={t.today}
               chats={groupedChats.today}
               currentChatId={currentChatId}
               onLoad={onLoadChat}
               onDelete={onDeleteChat}
             />
             <ChatGroup
-              title="Вчера"
+              title={t.yesterday}
               chats={groupedChats.yesterday}
               currentChatId={currentChatId}
               onLoad={onLoadChat}
               onDelete={onDeleteChat}
             />
             <ChatGroup
-              title="Ранее"
+              title={t.older}
               chats={groupedChats.older}
               currentChatId={currentChatId}
               onLoad={onLoadChat}
@@ -120,7 +158,7 @@ export default function Sidebar({
       <div className="sidebar-footer">
         <div className="user-info">
           <div className="user-avatar">U</div>
-          <div className="user-name">Студент</div>
+          <div className="user-name">{t.student}</div>
         </div>
       </div>
     </div>

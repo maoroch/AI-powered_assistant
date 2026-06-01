@@ -11,6 +11,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
       - PORT=8080
+      - REDIS_URL=redis://redis:6379
     depends_on:
       fastapi:
         condition: service_healthy
@@ -44,4 +45,10 @@ services:
       timeout: 5s
       retries: 3
       start_period: 90s
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
     restart: unless-stopped

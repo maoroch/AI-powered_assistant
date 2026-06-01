@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { Message } from "@/types";
 import type { WsStatus } from "@/hooks/useWebSocket";
+import ReactMarkdown from 'react-markdown';
 
 type BotStatus = "idle" | "searching" | "generating";
 
@@ -17,19 +18,22 @@ interface ChatWindowProps {
   messages: Message[];
   onSend: (text: string) => Promise<void>;
   isLoading: boolean;
-  botStatus: BotStatus;
+  botStatus?: BotStatus;
+  status?: BotStatus;
   wsStatus: WsStatus;
+  onExport?: () => void;
+  translations?: any;
 }
 
 // ── Status label shown while bot is working ───────────────────────────────────
 
-function StatusBubble({ botStatus }: { botStatus: BotStatus }) {
+function StatusBubble({ botStatus, translations: t }: { botStatus: BotStatus, translations?: any }) {
   if (botStatus === "idle") return null;
 
   const label =
     botStatus === "searching"
-      ? "Ищу в базе знаний..."
-      : "Генерирую ответ...";
+      ? (t?.botStatusSearching || "Ищу в базе знаний...")
+      : (t?.botStatusGenerating || "Генерирую ответ...");
 
   return (
     <div className="message bot-message">
@@ -53,7 +57,7 @@ function StreamingMessage({ text }: { text: string }) {
   return (
     <div className="message bot-message">
       <div className="message-content">
-        {text}
+        <ReactMarkdown>{text}</ReactMarkdown>
         <span
           style={{
             display: "inline-block",
@@ -77,8 +81,17 @@ export default function ChatWindow({
   onSend,
   isLoading,
   botStatus,
+  status,
   wsStatus,
+  onExport,
+  translations: t = {
+    botStatusSearching: "Ищу в базе знаний...",
+    botStatusGenerating: "Генерирую ответ...",
+    inputPlaceholder: "Задайте вопрос...",
+    sendButton: "Отправить"
+  }
 }: ChatWindowProps) {
+  const currentBotStatus = botStatus || status || "idle";
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -86,7 +99,7 @@ export default function ChatWindow({
 
   // The last message is a streaming one if the bot is generating
   const lastMsg = messages[messages.length - 1];
-  const isStreamingMsg = botStatus === "generating" && lastMsg?.role === "bot";
+  const isStreamingMsg = currentBotStatus === "generating" && lastMsg?.role === "bot";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -131,12 +144,10 @@ export default function ChatWindow({
               className="start-image"
             />
             <h1 className="start-text">
-              Привет! Я, <span className="title-intro">Zere AI</span>
+              {t.announcementTitle || "Привет! Я, "}<span className="title-intro">{"Zere AI"}</span>
             </h1>
             <p className="start-text-sub">
-              Ваш университетский ассистент.
-              <br />
-              Задайте мне вопрос, и я помогу вам!
+              {t.announcementBody}
             </p>
           </div>
         )}
@@ -149,13 +160,19 @@ export default function ChatWindow({
           }
           return (
             <div key={msg.id} className={`message ${msg.role}-message`}>
-              <div className="message-content">{msg.text}</div>
+              <div className="message-content">
+                {msg.role === "bot" ? (
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
+              </div>
             </div>
           );
         })}
 
         {/* Searching / waiting indicator (before streaming starts) */}
-        {botStatus === "searching" && <StatusBubble botStatus={botStatus} />}
+        {currentBotStatus === "searching" && <StatusBubble botStatus={currentBotStatus} translations={t} />}
 
         <div ref={bottomRef} />
       </div>
@@ -167,8 +184,8 @@ export default function ChatWindow({
             id="question"
             placeholder={
               wsStatus !== "connected"
-                ? "Подключение к серверу..."
-                : "Задать вопрос..."
+                ? (t.connectionStatusConnecting || "Подключение к серверу...")
+                : (t.inputPlaceholder || "Задайте вопрос...")
             }
             autoComplete="off"
             rows={1}
@@ -177,18 +194,14 @@ export default function ChatWindow({
             onKeyPress={handleKeyPress}
             disabled={wsStatus !== "connected"}
           />
-          <button id="askBtn" onClick={handleSend} disabled={!canSend}>
+          <button id="askBtn" onClick={handleSend} disabled={!canSend} title={t.sendButton}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
           </button>
         </div>
         <div className="input-hint">
-          {wsStatus === "connected"
-            ? "Нажмите Enter для отправки, Shift+Enter для новой строки"
-            : wsStatus === "connecting"
-            ? "⏳ Подключение..."
-            : "❌ Нет соединения с сервером"}
+          {t.inputWarning}
         </div>
       </div>
     </>
