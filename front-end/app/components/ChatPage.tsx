@@ -60,7 +60,7 @@ const translations = {
     yesterday: "Кеше",
     previous7Days: "7 күн ішінде",
     older: "Ескі",
-    announcementTitle: "қош келдіңіз ",
+    announcementTitle: "Қош келдіңіз ",
     announcementBody: "Университет туралы сұрақтарыңызға жауап беруге дайынмын.",
     announcementButton: "Бастау",
     menu: "Мәзір",
