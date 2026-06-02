@@ -17,9 +17,11 @@
 
 ---
 
-![AI Chatbot interface](documentation/assets/chat-demo-1.png)
-![AI Chatbot interface](documentation/assets/chat-demo-2.png)
-![AI Chatbot interface](documentation/assets/about.png)
+<div style="display: flex; gap: 16px;">
+<img src="documentation/assets/chat-demo-1.png" alt="AI Chatbot interface">
+<img src="documentation/assets/chat-demo-2.png" alt="AI Chatbot interface">
+</div>
+<img src="documentation/assets/about.png" alt="AI Chatbot interface">
 
 ---
 
