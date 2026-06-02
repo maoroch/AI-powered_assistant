@@ -17,6 +17,13 @@
 
 ---
 
+![AI Chatbot interface](documentation/assets/chat-demo-1.png)
+![AI Chatbot interface](documentation/assets/chat-demo-2.png)
+![AI Chatbot interface](documentation/assets/about.png)
+
+---
+
+
 ## 📦 Monorepo Services
 
 ```
